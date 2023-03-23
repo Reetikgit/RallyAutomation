@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+
+<head>
+  <title>User Stories By Iteration</title>
+  <meta name="Name" content="App Example: User Stories Table" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
+  <script type="text/javascript" src="https://rally1.rallydev.com/apps/1.33/sdk.js"></script>
+  <script type="text/javascript">
+
+    var rallyDataSource = null;
+    var iterDropdown = null;
+    var table = null;
+    var ids = "";
+    var data = "";
+    function showUserStoriesTable(results) {
+      for (let i in results.stories) {
+
+        document.getElementById("tblData").innerHTML += `
+        <tr>
+          <td>
+            `+ results.stories[i].FormattedID + `
+          </td>
+          <td>
+            `+ results.stories[i].Name + `
+          </td>
+        </tr>
+        
+        `
+        data += results.stories[i].FormattedID + '~' + results.stories[i].Name + '\n';
+      }
+      if (results.defects)
+        for (let i in results.defects) {
+
+          document.getElementById("tblData").innerHTML += `
+        <tr>
+          <td>
+            `+ results.defects[i].FormattedID + `
+          </td>
+          <td>
+            `+ results.defects[i].Name + `
+          </td>
+        </tr>
+        `
+          data += results.defects[i].FormattedID + '~' + results.defects[i].Name+'\n';
+        }
+      console.log(data)
+      // Get the data from each element on the form.
+      // This variable stores all the data.
+
+
+      // Convert the text to BLOB.
+
+    }
+
+    function onIterationSelected() {
+      var queryConfig = [];
+      queryConfig[0] = {
+        type: 'hierarchicalrequirement',
+        key: 'stories',
+        fetch: 'FormattedID,Name,Project,Tasks',
+        query: '(FormattedID IN ' + ids + ' )',
+
+      };
+      queryConfig[1] = {
+        type: 'Task',
+        key: 'stories',
+        fetch: 'FormattedID,Name,Project,Tasks',
+        query: '(FormattedID IN ' + ids + ' )',
+
+      };
+      queryConfig[2] = {
+        key: 'defects',
+        type: 'Defect',
+        fetch: 'FormattedID,Name,State',
+        query: '(FormattedID IN ' + ids + ' )'
+      };
+      console.log(queryConfig)
+      for (let i in queryConfig)
+        rallyDataSource.findAll(queryConfig[i], showUserStoriesTable);
+    }
+
+    async function onLoad() {
+      // rallyDataSource = new rally.sdk.data.RallyDataSource('__WORKSPACE_OID__','__PROJECT_OID__','__PROJECT_SCOPING_UP__','__PROJECT_SCOPING_DOWN__');
+      rallyDataSource = new rally.sdk.data.RallyDataSource('480447049636', '32867426076', 'true', 'true');  //IF RUNNING OUSIDE OF RALLY USE OIDs
+      var iterConfig = {};
+      await loadFile();
+      setTimeout(async function () {
+        iterDropdown = new rally.sdk.ui.IterationDropdown(iterConfig, rallyDataSource);
+        iterDropdown.display(document.getElementById("iterationDiv"), await onIterationSelected);
+      }, 3000)
+
+      setTimeout(async function () {
+        ids = "";
+        await display2Contents();
+        await onIterationSelected();
+      }, 6000)
+
+      setTimeout(function () {
+        //html_table_to_excel('xlsx');
+        const textToBLOB = new Blob([data], { type: 'text/plain' });
+        const sFileName = 'output.txt';	   // The file to save the data.
+
+        let newLink = document.createElement("a");
+        newLink.download = sFileName;
+
+        if (window.webkitURL != null) {
+          newLink.href = window.webkitURL.createObjectURL(textToBLOB);
+        }
+        else {
+          newLink.href = window.URL.createObjectURL(textToBLOB);
+          newLink.style.display = "none";
+          document.body.appendChild(newLink);
+        }
+
+        newLink.click();
+        var url = window.location.pathname;
+var folderpath = url.substring(0,url.lastIndexOf('/')+1);
+alert(folderpath)
+      }, 15000)
+
+    }
+
+    rally.addOnLoad(onLoad);
+
+    var reader = new XMLHttpRequest() || new ActiveXObject('MSXML2.XMLHTTP');
+
+    function loadFile() {
+      reader.open('get', 'GitLog.txt', true);
+      reader.onreadystatechange = displayContents;
+      reader.send(null);
+      document.getElementById("tblData").innerHTML = `
+        <tr>
+          <th>Rally Ids</th>
+          <th>Name</th> 
+        </tr>
+      `
+    }
+
+    async function displayContents() {
+      if (reader.readyState == 4) {
+        var result = reader.responseText.split(/\r?\n/);
+        for (let i = 0; i < result.length / 2; i++) {
+          ids += result[i] + ",";
+        }
+      }
+    }
+
+    //Second half
+
+    function loadSecondHalfFile() {
+      reader.open('get', 'GitLog.txt', true);
+      reader.onreadystatechange = display2Contents;
+      reader.send(null);
+      document.getElementById("tblData").innerHTML = `
+        <tr>
+          <th>User Story</th>
+          <th>Name</th> 
+        </tr>
+      `
+    }
+
+    async function display2Contents() {
+      if (reader.readyState == 4) {
+        var result = reader.responseText.split(/\r?\n/);
+        console.log(parseInt(result.length / 2))
+        for (let i = parseInt(result.length / 2) + 1; i <= result.length; i++) {
+          console.log(result[i])
+          if (result[i] != undefined)
+            ids += result[i] + ",";
+        }
+      }
+    }
+
+  </script>
+
+
+</head>
+
+<body>
+  <div>
+    <div id="iterationDiv"></div>
+  </div>
+  <br /><br />
+  <div id="stories"></div>
+  <table id="tblData">
+
+  </table>
+
+</body>
+
+<style>
+  .dropdown {
+    display: none !important;
+  }
+
+  .appHeader {
+    display: none !important;
+  }
+
+  #stories {
+    display: none !important;
+  }
+
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td,
+  th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 18px;
+  }
+
+  tr:nth-child(even) {}
+</style>
+
+</html>
