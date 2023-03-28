@@ -1,9 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html>
 
 <head>
-  <title>User Stories By Iteration</title>
-  <meta name="Name" content="App Example: User Stories Table" />
+  <title>Rally IDS</title>
+  <meta name="Name" content="Rally IDS" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
@@ -17,10 +17,11 @@
     var table = null;
     var ids = "";
     var data = "";
+    var globalIDS="";
     function showUserStoriesTable(results) {
       for (let i in results.stories) {
-
-        document.getElementById("tblData").innerHTML += `
+        // if (results.stories[i].FormattedID != undefined && globalIDS.includes(results.stories[i].FormattedID)) {
+          document.getElementById("tblData").innerHTML += `
         <tr>
           <td>
             `+ results.stories[i].FormattedID + `
@@ -31,30 +32,34 @@
         </tr>
         
         `
-        data += results.stories[i].FormattedID + '~' + results.stories[i].Name + '\n';
+          data += results.stories[i].FormattedID + '~' + results.stories[i].Name + '\n';
+       // } 
+        //else {
+        //   console.log("======IGNORED======")
+        //     console.log(results.stories[i].FormattedID)
+        // }
+
       }
       if (results.defects)
         for (let i in results.defects) {
-
-          document.getElementById("tblData").innerHTML += `
-        <tr>
-          <td>
-            `+ results.defects[i].FormattedID + `
-          </td>
-          <td>
-            `+ results.defects[i].Name + `
-          </td>
-        </tr>
-        `
-          data += results.defects[i].FormattedID + '~' + results.defects[i].Name+'\n';
+         // if (results.defects[i].FormattedID !=undefined && globalIDS.includes(results.defects[i].FormattedID)) {
+            document.getElementById("tblData").innerHTML += `
+              <tr>
+                <td>
+                  `+ results.defects[i].FormattedID + `
+                </td>
+                <td>
+                  `+ results.defects[i].Name + `
+                </td>
+              </tr>
+              `
+            data += results.defects[i].FormattedID + '~' + results.defects[i].Name + '\n';
+           //}
+          // else{
+          //   console.log("======IGNORED======")
+          //   console.log(results.defects[i].FormattedID)
+          // }
         }
-      console.log(data)
-      // Get the data from each element on the form.
-      // This variable stores all the data.
-
-
-      // Convert the text to BLOB.
-
     }
 
     function onIterationSelected() {
@@ -79,7 +84,6 @@
         fetch: 'FormattedID,Name,State',
         query: '(FormattedID IN ' + ids + ' )'
       };
-      console.log(queryConfig)
       for (let i in queryConfig)
         rallyDataSource.findAll(queryConfig[i], showUserStoriesTable);
     }
@@ -119,8 +123,7 @@
 
         newLink.click();
         var url = window.location.pathname;
-var folderpath = url.substring(0,url.lastIndexOf('/')+1);
-alert(folderpath)
+        var folderpath = url.substring(0, url.lastIndexOf('/') + 1);
       }, 15000)
 
     }
@@ -146,6 +149,7 @@ alert(folderpath)
         var result = reader.responseText.split(/\r?\n/);
         for (let i = 0; i < result.length / 2; i++) {
           ids += result[i] + ",";
+          globalIDS +=result[i] + ",";
         }
       }
     }
@@ -167,11 +171,10 @@ alert(folderpath)
     async function display2Contents() {
       if (reader.readyState == 4) {
         var result = reader.responseText.split(/\r?\n/);
-        console.log(parseInt(result.length / 2))
         for (let i = parseInt(result.length / 2) + 1; i <= result.length; i++) {
-          console.log(result[i])
           if (result[i] != undefined)
             ids += result[i] + ",";
+            globalIDS +=result[i] + ",";
         }
       }
     }
