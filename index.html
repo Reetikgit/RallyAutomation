@@ -118,8 +118,8 @@
           newLink.style.display = "none";
           document.body.appendChild(newLink);
         }
-
-        newLink.click();
+        if(data.length!=0)
+          newLink.click();
         var url = window.location.pathname;
         var folderpath = url.substring(0, url.lastIndexOf('/') + 1);
       }, 15000)
