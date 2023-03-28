@@ -20,7 +20,7 @@
     var globalIDS="";
     function showUserStoriesTable(results) {
       for (let i in results.stories) {
-        // if (results.stories[i].FormattedID != undefined && globalIDS.includes(results.stories[i].FormattedID)) {
+        if (results.stories[i].FormattedID != undefined && globalIDS.includes(results.stories[i].FormattedID)) {
           document.getElementById("tblData").innerHTML += `
         <tr>
           <td>
@@ -33,16 +33,15 @@
         
         `
           data += results.stories[i].FormattedID + '~' + results.stories[i].Name + '\n';
-       // } 
-        //else {
-        //   console.log("======IGNORED======")
-        //     console.log(results.stories[i].FormattedID)
-        // }
+        } else {
+          console.log("======IGNORED======")
+            console.log(results.stories[i].FormattedID)
+        }
 
       }
       if (results.defects)
         for (let i in results.defects) {
-         // if (results.defects[i].FormattedID !=undefined && globalIDS.includes(results.defects[i].FormattedID)) {
+          if (results.defects[i].FormattedID !=undefined && globalIDS.includes(results.defects[i].FormattedID)) {
             document.getElementById("tblData").innerHTML += `
               <tr>
                 <td>
@@ -54,11 +53,10 @@
               </tr>
               `
             data += results.defects[i].FormattedID + '~' + results.defects[i].Name + '\n';
-           //}
-          // else{
-          //   console.log("======IGNORED======")
-          //   console.log(results.defects[i].FormattedID)
-          // }
+          }else{
+            console.log("======IGNORED======")
+            console.log(results.defects[i].FormattedID)
+          }
         }
     }
 
